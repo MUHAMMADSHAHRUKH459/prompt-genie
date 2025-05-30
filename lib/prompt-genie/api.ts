@@ -9,28 +9,33 @@ export async function convertRomanUrduToEnglishPrompt(
   romanUrduText: string
 ): Promise<PromptConversionResponse> {
   const apiKey = process.env.NEXT_PUBLIC_OPENROUTER_API_KEY;
-  
+
   if (!apiKey) {
     throw new Error("OpenRouter API key is not configured");
   }
 
+  // Use origin safely depending on environment (browser or server)
+  const referer =
+    typeof window !== "undefined"
+      ? window.location.origin
+      : "https://prompt-genie-two.vercel.app"; // fallback on server
 
-  
   try {
     const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         "Authorization": `Bearer ${apiKey}`,
-        "HTTP-Referer": window.location.origin, // OpenRouter requires this
+        "HTTP-Referer": referer, // ✅ safe for both client and server
         "X-Title": "PromptGenie"
       },
       body: JSON.stringify({
-        model: "openai/gpt-3.5-turbo", // You can change to a preferred model
+        model: "openai/gpt-3.5-turbo",
         messages: [
           {
             role: "system",
-            content: "Convert the following Roman Urdu idea into a professional, polished English prompt suitable for design generation. Return only the converted prompt without any explanations."
+            content:
+              "Convert the following Roman Urdu idea into a professional, polished English prompt suitable for design generation. Return only the converted prompt without any explanations."
           },
           {
             role: "user",
@@ -45,6 +50,7 @@ export async function convertRomanUrduToEnglishPrompt(
     }
 
     const data = await response.json();
+
     return {
       englishPrompt: data.choices[0].message.content.trim()
     };
@@ -54,14 +60,12 @@ export async function convertRomanUrduToEnglishPrompt(
   }
 }
 
-// This is a mock function to use during development if OpenRouter API is not set up
+// Optional: Mock for testing without real API
 export async function mockConvertRomanUrduToEnglishPrompt(
   romanUrduText: string
 ): Promise<PromptConversionResponse> {
   return new Promise((resolve) => {
-    // Simulate API delay
     setTimeout(() => {
-      // Check for common Roman Urdu patterns and return mock responses
       if (romanUrduText.includes("logo")) {
         resolve({
           englishPrompt: "Design a professional logo using blue and white colors with a modern, minimalist aesthetic."
