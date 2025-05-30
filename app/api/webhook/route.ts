@@ -1,24 +1,33 @@
-// app/api/webhook/route.ts (Next.js 13+)
+// app/api/webhook/route.ts
+
 import { NextRequest, NextResponse } from 'next/server';
-import { convertRomanUrduToEnglishPrompt } from '@/lib/prompt-genie/api';
 
 export async function POST(req: NextRequest) {
+  console.log("✅ Webhook POST endpoint called");
+
   try {
+    // Parse the JSON body
     const body = await req.json();
     const { message } = body;
 
+    // Validate message
     if (!message) {
-      return NextResponse.json({ error: 'No message provided' }, { status: 400 });
+      return NextResponse.json(
+        { error: 'No message provided' },
+        { status: 400 }
+      );
     }
 
-    const result = await convertRomanUrduToEnglishPrompt(message);
-
+    // Temporary mock response for testing
     return NextResponse.json({
       success: true,
-      englishPrompt: result.englishPrompt,
+      englishPrompt: `Received message: ${message}`,
     });
   } catch (error) {
-    console.error('Error processing webhook:', error);
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    console.error('❌ Error in webhook handler:', error);
+    return NextResponse.json(
+      { error: 'Internal Server Error' },
+      { status: 500 }
+    );
   }
 }
